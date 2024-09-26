@@ -19,3 +19,7 @@
 .heartbeat {
   animation: heartbeat 1s infinite;
 }
+
+.ant-card-head {
+  color: #ffffff !important;
+}

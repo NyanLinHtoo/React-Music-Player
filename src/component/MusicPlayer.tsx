@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { Card, Slider } from "antd";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Card, Slider, Typography } from "antd";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faBackwardStep,
@@ -12,98 +12,80 @@ import {
 import "./imageAnimation.css";
 
 const MusicPlayer = () => {
-  // const [currentTime, setCurrentTime] = useState(0); // Current time of the song in seconds
-  // const [duration, setDuration] = useState(202); // Total duration of the song in seconds (3:22 as an example)
-  // const audioRef = useRef(null); // Ref for the audio element
-
-  // // Mock useEffect to simulate song playing
-  // useEffect(() => {
-  //   if (isPlaying) {
-  //     const interval = setInterval(() => {
-  //       setCurrentTime((prevTime) => (prevTime < duration ? prevTime + 1 : duration));
-  //     }, 1000);
-  //     return () => clearInterval(interval);
-  //   }
-  // }, [isPlaying, currentTime, duration]);
-
-  // // Handle Slider change event to seek music
-  // const handleSliderChange = (value) => {
-  //   setCurrentTime(value); // Update current time with the slider value
-  //   if (audioRef.current) {
-  //     audioRef.current.currentTime = value; // Sync the audio element's current time (if using an actual audio element)
-  //   }
-  // };
-
-  // // Calculate the progress percentage
-  // const progress = (currentTime / duration) * 100;
   const [isPlaying, setIsPlaying] = useState(false);
-  // const [currentMusicDetail, setCurrentMusicDetail] = useState({
-  //   songName: "It's You",
-  //   songArtist: "Ali Gatie",
-  //   songSrc: "../../public/songs/Ali Gatie - It's You.mp3",
-  //   songAvator: "/images/Ali Gatie - It's You.jpg",
-  // });
   const [musicIndex, setMusicIndex] = useState(0);
   const [isRepeat, setIsRepeat] = useState(true);
   const [isShuffle, setIsShuffle] = useState(true);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
 
   const currentAudio = useRef<HTMLAudioElement | null>(null);
+
+  const { Text } = Typography;
 
   const musicApi = [
     {
       songName: "It's You",
       songArtist: "Ali Gatie",
-      songSrc: "../../public/songs/Ali Gatie - It's You.mp3",
+      songSrc: "/songs/Ali Gatie - It's You.mp3",
       songAvator: "/images/Ali Gatie - It's You.jpg",
+      songBgColor: "#295fb1",
     },
     {
       songName: "Supermarket Flowers",
       songArtist: "Ed Sheeran",
-      songSrc: "../../public/songs/Ed Sheeran  Supermarket Flowers.mp3",
+      songSrc: "/songs/Ed Sheeran  Supermarket Flowers.mp3",
       songAvator: "/images/Ed Sheeran  Supermarket Flowers.jpg",
+      songBgColor: "#94caeb",
     },
     {
       songName: "247, 365",
       songArtist: "Elijah woods",
-      songSrc: "../../public/songs/elijah woods - 247, 365.mp3",
+      songSrc: "/songs/elijah woods - 247, 365.mp3",
       songAvator: "/images/elijah woods - 247, 365.jpg",
+      songBgColor: "#e08736",
     },
     {
       songName: "Eyes Blue x Heather",
       songArtist: "Fran Facilċ",
-      songSrc: "../../public/songs/Fran Facilċ - Eyes Blue x Heather.mp3",
+      songSrc: "/songs/Fran Facilċ - Eyes Blue x Heather.mp3",
       songAvator: "/images/Fran Facilċ - Eyes Blue x Heather.jpg",
+      songBgColor: "#1d3d86",
     },
     {
       songName: "All the kids are depressed",
       songArtist: "Jeremy Zucker",
-      songSrc:
-        "../../public/songs/Jeremy Zucker - all the kids are depressed.mp3",
+      songSrc: "/songs/Jeremy Zucker - all the kids are depressed.mp3",
       songAvator: "/images/Jeremy Zucker - all the kids are depressed.jpg",
+      songBgColor: "#2a3054",
     },
     {
       songName: "Always, i'll care",
       songArtist: "Jeremy Zucker",
-      songSrc: "../../public/songs/Jeremy Zucker - always, i'll care.mp3",
+      songSrc: "/songs/Jeremy Zucker - always, i'll care.mp3",
       songAvator: "/images/Jeremy Zucker - always, i'll care.jpg",
+      songBgColor: "#918078",
     },
     {
       songName: "I Like Me Better",
       songArtist: "Lauv",
-      songSrc: "../../public/songs/Lauv - I Like Me Better.mp3",
+      songSrc: "/songs/Lauv - I Like Me Better.mp3",
       songAvator: "/images/Lauv - I Like Me Better.jpg",
+      songBgColor: "#676868",
     },
     {
       songName: "Finally",
       songArtist: "Rex Orange County",
-      songSrc: "../../public/songs/Rex Orange County - Finally.mp3",
+      songSrc: "/songs/Rex Orange County - Finally.mp3",
       songAvator: "/images/Rex Orange County - Finally.jpg",
+      songBgColor: "#0c150e",
     },
     {
       songName: "Painkiller",
       songArtist: "Ruel",
-      songSrc: "../../public/songs/Ruel - Painkiller.mp3",
+      songSrc: "/songs/Ruel - Painkiller.mp3",
       songAvator: "/images/Ruel - Painkiller.jpg",
+      songBgColor: "#E7B604",
     },
   ];
 
@@ -120,14 +102,15 @@ const MusicPlayer = () => {
     });
   };
 
-  const handleNextBtn = () => {
+  // Use useCallback to memoize handleNextBtn to avoid recreating it on every render
+  const handleNextBtn = useCallback(() => {
     if (isShuffle) {
       const randomIndex = Math.floor(Math.random() * musicApi.length);
       setMusicIndex(randomIndex);
     } else {
       setMusicIndex((prevIndex) => (prevIndex + 1) % musicApi.length);
     }
-  };
+  }, [isShuffle, musicApi.length]);
 
   const handleBackBtn = () => {
     if (isShuffle) {
@@ -152,6 +135,12 @@ const MusicPlayer = () => {
   useEffect(() => {
     if (currentAudio.current) {
       const audioElement = currentAudio.current;
+      const onTimeUpdate = () => {
+        setCurrentTime(audioElement.currentTime); // Update current time
+      };
+      const onLoadedMetadata = () => {
+        setDuration(audioElement.duration); // Set duration once audio is loaded
+      };
       const onEnd = () => {
         if (isRepeat) {
           audioElement.currentTime = 0;
@@ -162,14 +151,17 @@ const MusicPlayer = () => {
       };
 
       // Add event listener for the 'ended' event
+      audioElement.addEventListener("timeupdate", onTimeUpdate);
+      audioElement.addEventListener("loadedmetadata", onLoadedMetadata);
       audioElement.addEventListener("ended", onEnd);
 
-      // Clean up the event listener
       return () => {
+        audioElement.removeEventListener("timeupdate", onTimeUpdate);
+        audioElement.removeEventListener("loadedmetadata", onLoadedMetadata);
         audioElement.removeEventListener("ended", onEnd);
       };
     }
-  }, [isRepeat]);
+  }, [isRepeat, handleNextBtn]);
 
   // Update audio src and play/pause the audio when musicIndex changes
   useEffect(() => {
@@ -181,16 +173,39 @@ const MusicPlayer = () => {
     }
   }, [musicIndex]);
 
+  const handleProgessChange = (value: number) => {
+    if (currentAudio.current) {
+      console.log(
+        currentAudio.current.currentTime,
+        currentAudio.current.duration
+      );
+      currentAudio.current.currentTime = value;
+      setCurrentTime(value);
+    }
+  };
+
+  const formatTime = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${minutes}:${secs < 10 ? "0" : ""}${secs}`;
+  };
+
   return (
-    <div className="flex justify-center items-center h-screen bg-gray-800">
+    <div
+      className="flex justify-center items-center h-screen "
+      style={{ backgroundColor: `${musicApi[musicIndex].songBgColor}` }}>
       <audio src={musicApi[musicIndex].songSrc} ref={currentAudio}></audio>
       <Card
-        className="bg-slate-600 font-roboto bg-transparent text-white rounded-2xl"
+        title="Sound Stream"
+        className="font-roboto backdrop-blur-sm bg-white/15 text-white rounded-2xl text-center "
         style={{ width: 300 }}>
-        <div className="text-center">
-          <p className="text-xs">Music Player</p>
-          <p className="text-xl py-6">{musicApi[musicIndex].songName}</p>
-          <p className="text-sm pb-3">{musicApi[musicIndex].songArtist}</p>
+        <div className="text-center pb-6">
+          <Text italic strong className="text-xl pb-3 text-white block">
+            {musicApi[musicIndex].songName}
+          </Text>
+          <Text className="text-xs  text-white">
+            {musicApi[musicIndex].songArtist}
+          </Text>
         </div>
 
         <div>
@@ -204,15 +219,15 @@ const MusicPlayer = () => {
         </div>
 
         <div className="flex justify-between pt-3">
-          <p>00:00</p>
-          <p>03:22</p>
+          <p>{formatTime(currentTime)}</p>
+          <p>{formatTime(duration)}</p>
         </div>
         <div className="pb-3">
           <Slider
-            // min={0}
-            // max={duration}
-            // value={currentTime}
-            // onChange={handleSliderChange}
+            min={0}
+            max={duration}
+            value={currentTime}
+            onChange={handleProgessChange}
             tooltip={{ open: false }}
           />
         </div>
@@ -220,7 +235,9 @@ const MusicPlayer = () => {
         <div className="flex justify-between items-baseline">
           <FontAwesomeIcon
             icon={faShuffle}
-            className={`cursor-pointer ${isShuffle ? "text-cyan-300" : ""}`}
+            className={`cursor-pointer ${
+              isShuffle ? "text-rose-500 " : "brightness-50"
+            }`}
             onClick={handleShuffle}
           />
           <FontAwesomeIcon
@@ -250,7 +267,9 @@ const MusicPlayer = () => {
           />
           <FontAwesomeIcon
             icon={faRepeat}
-            className={`cursor-pointer ${isRepeat ? "text-cyan-300" : ""}`}
+            className={`cursor-pointer ${
+              isRepeat ? "text-rose-500" : "brightness-50"
+            }`}
             onClick={handleRepeat}
           />
         </div>
