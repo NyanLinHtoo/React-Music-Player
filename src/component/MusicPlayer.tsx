@@ -193,11 +193,14 @@ const MusicPlayer = () => {
   return (
     <div
       className="flex justify-center items-center h-screen "
-      style={{ backgroundColor: `${musicApi[musicIndex].songBgColor}` }}>
+      style={{
+        background: `linear-gradient(135deg, ${musicApi[musicIndex].songBgColor}, #000)`,
+      }}>
       <audio src={musicApi[musicIndex].songSrc} ref={currentAudio}></audio>
       <Card
-        title="Sound Stream"
-        className="font-roboto backdrop-blur-sm bg-white/15 text-white rounded-2xl text-center "
+        // title="Sound Stream"
+        bordered={false}
+        className="drop-shadow-2xl font-roboto backdrop-blur-sm bg-white/15 text-white rounded-2xl text-center "
         style={{ width: 300 }}>
         <div className="text-center pb-6">
           <Text italic strong className="text-xl pb-3 text-white block">
